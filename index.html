@@ -85,6 +85,24 @@
             font-size: 20px;
             font-weight: 600;
             letter-spacing: -0.02em;
+            flex: 1;
+        }
+        
+        .header-menu-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin: -8px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .header-menu-btn:active {
+            transform: scale(0.9);
         }
         
         .container {
@@ -203,6 +221,7 @@
             box-shadow: var(--shadow-md);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
         
         .product-card:active {
@@ -247,6 +266,156 @@
             text-align: center;
             color: var(--accent);
             cursor: pointer;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4);
+            z-index: 10;
+            transition: all 0.2s;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .delete-mode .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .delete-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .delete-mode-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            z-index: 50;
+            transition: all 0.3s;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-mode-toggle.visible {
+            display: flex;
+        }
+        
+        .delete-mode-toggle:active {
+            transform: scale(0.95);
+        }
+        
+        .delete-mode .delete-mode-toggle {
+            background: #ff3b30;
+        }
+        
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1500;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .menu-overlay.active {
+            display: block;
+        }
+        
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            max-width: 80%;
+            height: 100%;
+            background: var(--bg-card);
+            box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+            z-index: 1600;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .menu-panel.active {
+            right: 0;
+        }
+        
+        .menu-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin: -8px;
+            color: var(--text-primary);
+        }
+        
+        .menu-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        
+        .menu-item {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        
+        .menu-item:active {
+            background: var(--bg-primary);
+        }
+        
+        .menu-item-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
         }
         
         .modal {
@@ -405,6 +574,16 @@
             transform: scale(0.98);
         }
         
+        .btn-delete {
+            background: #ff3b30;
+            color: white;
+        }
+        
+        .btn-delete:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -540,6 +719,53 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
+        .confirm-dialog {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+        
+        .confirm-dialog.active {
+            display: flex;
+        }
+        
+        .confirm-content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .confirm-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .confirm-message {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        .success-message {
+            background: #34c759;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        
         @keyframes zoomIn {
             from { 
                 opacity: 0;
@@ -570,6 +796,7 @@
             <div class="header-content">
                 <button class="back-btn hidden" id="backBtn" onclick="goBack()">←</button>
                 <div class="header-title" id="headerTitle">Product Catalogue</div>
+                <button class="header-menu-btn" onclick="toggleMenu()">⋮</button>
             </div>
         </div>
         
@@ -604,8 +831,30 @@
                 </div>
                 <div class="product-grid" id="productsList"></div>
             </div>
+            <button class="delete-mode-toggle" id="deleteToggle" onclick="toggleDeleteMode()">🗑️</button>
         </div>
     </div>
+    
+    <!-- Menu Panel -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-header">
+            <div class="menu-title">Menu</div>
+            <button class="menu-close" onclick="closeMenu()">×</button>
+        </div>
+        <div class="menu-items">
+            <button class="menu-item" onclick="exportData()">
+                <span class="menu-item-icon">📥</span>
+                <span>Export Data</span>
+            </button>
+            <button class="menu-item" onclick="document.getElementById('importFileInput').click()">
+                <span class="menu-item-icon">📤</span>
+                <span>Import Data</span>
+            </button>
+        </div>
+    </div>
+    
+    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importData(event)">
     
     <!-- Add Brand Modal -->
     <div class="modal" id="addBrandModal" onclick="closeModal(event, 'addBrandModal')">
@@ -662,12 +911,33 @@
         </div>
     </div>
     
+    <!-- Confirm Delete Dialog -->
+    <div class="confirm-dialog" id="confirmDialog">
+        <div class="confirm-content">
+            <div class="confirm-title">Delete Product?</div>
+            <div class="confirm-message" id="confirmMessage">Are you sure you want to delete this product? This action cannot be undone.</div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closeConfirmDialog()">Cancel</button>
+                <button class="btn btn-delete" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Dialog -->
+    <div class="confirm-dialog" id="successDialog">
+        <div class="confirm-content">
+            <div class="success-message" id="successMessage">✓ Data exported successfully!</div>
+            <button class="btn btn-primary" onclick="closeSuccessDialog()" style="width: 100%;">OK</button>
+        </div>
+    </div>
+    
     <script>
         // App State
         let appState = {
             currentScreen: 'home',
             currentCategory: null,
             currentBrand: null,
+            deleteMode: false,
             data: {
                 COOLER: {},
                 FAN: {}
@@ -685,6 +955,8 @@
             Object.values(screens).forEach(screen => screen.classList.add('hidden'));
             screens[screenName].classList.remove('hidden');
             appState.currentScreen = screenName;
+            appState.deleteMode = false;
+            document.getElementById('productsScreen').classList.remove('delete-mode');
             
             const backBtn = document.getElementById('backBtn');
             const headerTitle = document.getElementById('headerTitle');
@@ -708,6 +980,121 @@
             } else if (appState.currentScreen === 'brands') {
                 showScreen('home');
             }
+        }
+        
+        // Menu
+        function toggleMenu() {
+            const overlay = document.getElementById('menuOverlay');
+            const panel = document.getElementById('menuPanel');
+            overlay.classList.add('active');
+            panel.classList.add('active');
+        }
+        
+        function closeMenu() {
+            const overlay = document.getElementById('menuOverlay');
+            const panel = document.getElementById('menuPanel');
+            overlay.classList.remove('active');
+            panel.classList.remove('active');
+        }
+        
+        // Export/Import Functions
+        function exportData() {
+            const data = localStorage.getItem('catalogData');
+            if (!data || data === '{"COOLER":{},"FAN":{}}') {
+                alert('No data to export. Add some products first!');
+                return;
+            }
+            
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `catalog-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            closeMenu();
+            showSuccessMessage('Data exported successfully!');
+        }
+        
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate data structure
+                    if (importedData && typeof importedData === 'object') {
+                        localStorage.setItem('catalogData', JSON.stringify(importedData));
+                        appState.data = importedData;
+                        
+                        closeMenu();
+                        showSuccessMessage('Data imported successfully!');
+                        
+                        // Refresh current view
+                        if (appState.currentScreen === 'products') {
+                            showProducts(appState.currentCategory, appState.currentBrand);
+                        } else if (appState.currentScreen === 'brands') {
+                            showBrands(appState.currentCategory);
+                        }
+                    } else {
+                        alert('Invalid data file format');
+                    }
+                } catch (error) {
+                    alert('Error importing data. Please check the file.');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        function showSuccessMessage(message) {
+            document.getElementById('successMessage').innerHTML = `✓ ${message}`;
+            document.getElementById('successDialog').classList.add('active');
+        }
+        
+        function closeSuccessDialog() {
+            document.getElementById('successDialog').classList.remove('active');
+        }
+        
+        // Delete Mode
+        function toggleDeleteMode() {
+            appState.deleteMode = !appState.deleteMode;
+            const productsScreen = document.getElementById('productsScreen');
+            
+            if (appState.deleteMode) {
+                productsScreen.classList.add('delete-mode');
+            } else {
+                productsScreen.classList.remove('delete-mode');
+            }
+        }
+        
+        function confirmDelete(productIndex, productName) {
+            const dialog = document.getElementById('confirmDialog');
+            const message = document.getElementById('confirmMessage');
+            const deleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            message.textContent = `Are you sure you want to delete "${productName}"? This action cannot be undone.`;
+            deleteBtn.onclick = () => deleteProduct(productIndex);
+            
+            dialog.classList.add('active');
+        }
+        
+        function closeConfirmDialog() {
+            document.getElementById('confirmDialog').classList.remove('active');
+        }
+        
+        function deleteProduct(productIndex) {
+            appState.data[appState.currentCategory][appState.currentBrand].splice(productIndex, 1);
+            saveData();
+            closeConfirmDialog();
+            showProducts(appState.currentCategory, appState.currentBrand);
         }
         
         // Brands
@@ -770,11 +1157,20 @@
             
             const products = appState.data[category][brand] || [];
             
+            // Show/hide delete toggle
+            const deleteToggle = document.getElementById('deleteToggle');
+            if (products.length > 0) {
+                deleteToggle.classList.add('visible');
+            } else {
+                deleteToggle.classList.remove('visible');
+            }
+            
             products.forEach((product, index) => {
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
                 productCard.onclick = (e) => {
-                    if (!e.target.classList.contains('product-price')) {
+                    if (!e.target.classList.contains('product-price') && 
+                        !e.target.classList.contains('delete-btn')) {
                         openImageModal(product, index);
                     }
                 };
@@ -782,6 +1178,14 @@
                 const imageHtml = product.image 
                     ? `<img src="${product.image}" alt="${product.name}" class="product-image">`
                     : `<div class="product-placeholder">📦</div>`;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '×';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    confirmDelete(index, product.name);
+                };
                 
                 const priceDiv = document.createElement('div');
                 priceDiv.className = 'product-price';
@@ -798,6 +1202,7 @@
                     <div class="product-name">${product.name}</div>
                 `;
                 productCard.appendChild(priceDiv);
+                productCard.appendChild(deleteBtn);
                 productsList.appendChild(productCard);
             });
             
