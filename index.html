@@ -222,10 +222,26 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            user-select: none;
         }
         
         .product-card:active {
             transform: scale(0.97);
+        }
+        
+        .product-card.dragging {
+            opacity: 0.5;
+            transform: scale(1.05);
+            z-index: 1000;
+        }
+        
+        .product-card.drag-over {
+            border: 2px dashed var(--accent);
+        }
+        
+        .product-card.selected {
+            border: 3px solid #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
         }
         
         .product-image-container {
@@ -299,10 +315,72 @@
             transform: scale(0.9);
         }
         
-        .delete-mode-toggle {
+        .select-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border: 2px solid #007AFF;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .select-mode .select-checkbox {
+            display: flex;
+        }
+        
+        .select-checkbox.checked {
+            background: #007AFF;
+        }
+        
+        .select-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .drag-handle {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: move;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            touch-action: none;
+        }
+        
+        .reorder-mode .drag-handle {
+            display: flex;
+        }
+        
+        .floating-actions {
             position: fixed;
             bottom: 24px;
             right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 50;
+        }
+        
+        .fab {
             background: var(--accent);
             color: white;
             border: none;
@@ -312,23 +390,91 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 50;
             transition: all 0.3s;
             display: none;
             align-items: center;
             justify-content: center;
         }
         
-        .delete-mode-toggle.visible {
+        .fab.visible {
             display: flex;
         }
         
-        .delete-mode-toggle:active {
+        .fab:active {
             transform: scale(0.95);
         }
         
-        .delete-mode .delete-mode-toggle {
+        .fab.delete-toggle {
+            background: var(--accent);
+        }
+        
+        .delete-mode .fab.delete-toggle {
             background: #ff3b30;
+        }
+        
+        .fab.select-toggle {
+            background: #007AFF;
+        }
+        
+        .select-mode .fab.select-toggle {
+            background: #34C759;
+        }
+        
+        .fab.reorder-toggle {
+            background: #FF9500;
+        }
+        
+        .reorder-mode .fab.reorder-toggle {
+            background: #34C759;
+        }
+        
+        .fab.whatsapp {
+            background: #25D366;
+        }
+        
+        .selection-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #007AFF;
+            color: white;
+            padding: 16px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 60;
+            box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .selection-bar.visible {
+            display: flex;
+        }
+        
+        .selection-count {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .selection-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .selection-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .selection-btn:active {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .menu-overlay {
@@ -831,7 +977,32 @@
                 </div>
                 <div class="product-grid" id="productsList"></div>
             </div>
-            <button class="delete-mode-toggle" id="deleteToggle" onclick="toggleDeleteMode()">🗑️</button>
+            
+            <!-- Floating Action Buttons -->
+            <div class="floating-actions">
+                <button class="fab whatsapp visible" id="whatsappBtn" onclick="shareOnWhatsApp()" title="Share on WhatsApp">
+                    <span style="font-size: 28px;">💬</span>
+                </button>
+                <button class="fab reorder-toggle" id="reorderToggle" onclick="toggleReorderMode()" title="Reorder Products">
+                    <span style="font-size: 20px;">⇅</span>
+                </button>
+                <button class="fab select-toggle" id="selectToggle" onclick="toggleSelectMode()" title="Select Products">
+                    <span style="font-size: 22px;">✓</span>
+                </button>
+                <button class="fab delete-toggle" id="deleteToggle" onclick="toggleDeleteMode()" title="Delete Products">
+                    <span>🗑️</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Selection Bar -->
+        <div class="selection-bar" id="selectionBar">
+            <div class="selection-count" id="selectionCount">0 selected</div>
+            <div class="selection-actions">
+                <button class="selection-btn" onclick="shareSelectedOnWhatsApp()">Share</button>
+                <button class="selection-btn" onclick="deleteSelected()">Delete</button>
+                <button class="selection-btn" onclick="cancelSelection()">Cancel</button>
+            </div>
         </div>
     </div>
     
@@ -938,6 +1109,10 @@
             currentCategory: null,
             currentBrand: null,
             deleteMode: false,
+            selectMode: false,
+            reorderMode: false,
+            selectedProducts: new Set(),
+            draggedIndex: null,
             data: {
                 COOLER: {},
                 FAN: {}
@@ -955,8 +1130,14 @@
             Object.values(screens).forEach(screen => screen.classList.add('hidden'));
             screens[screenName].classList.remove('hidden');
             appState.currentScreen = screenName;
+            
+            // Reset modes
             appState.deleteMode = false;
-            document.getElementById('productsScreen').classList.remove('delete-mode');
+            appState.selectMode = false;
+            appState.reorderMode = false;
+            appState.selectedProducts.clear();
+            document.getElementById('productsScreen').classList.remove('delete-mode', 'select-mode', 'reorder-mode');
+            document.getElementById('selectionBar').classList.remove('visible');
             
             const backBtn = document.getElementById('backBtn');
             const headerTitle = document.getElementById('headerTitle');
@@ -1028,7 +1209,6 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     
-                    // Validate data structure
                     if (importedData && typeof importedData === 'object') {
                         localStorage.setItem('catalogData', JSON.stringify(importedData));
                         appState.data = importedData;
@@ -1036,7 +1216,6 @@
                         closeMenu();
                         showSuccessMessage('Data imported successfully!');
                         
-                        // Refresh current view
                         if (appState.currentScreen === 'products') {
                             showProducts(appState.currentCategory, appState.currentBrand);
                         } else if (appState.currentScreen === 'brands') {
@@ -1063,16 +1242,200 @@
             document.getElementById('successDialog').classList.remove('active');
         }
         
+        // WhatsApp Sharing
+        function shareOnWhatsApp() {
+            const products = appState.data[appState.currentCategory][appState.currentBrand] || [];
+            if (products.length === 0) {
+                alert('No products to share');
+                return;
+            }
+            
+            let message = `*${appState.currentCategory} - ${appState.currentBrand}*\n\n`;
+            products.forEach((product, index) => {
+                message += `${index + 1}. ${product.name}`;
+                if (product.price) {
+                    message += ` - ${product.price}`;
+                }
+                message += '\n';
+            });
+            
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+        
+        function shareSelectedOnWhatsApp() {
+            const products = appState.data[appState.currentCategory][appState.currentBrand] || [];
+            const selected = Array.from(appState.selectedProducts).map(i => products[i]);
+            
+            if (selected.length === 0) {
+                alert('No products selected');
+                return;
+            }
+            
+            let message = `*${appState.currentCategory} - ${appState.currentBrand}*\n\n`;
+            selected.forEach((product, index) => {
+                message += `${index + 1}. ${product.name}`;
+                if (product.price) {
+                    message += ` - ${product.price}`;
+                }
+                message += '\n';
+            });
+            
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+        
         // Delete Mode
         function toggleDeleteMode() {
             appState.deleteMode = !appState.deleteMode;
+            appState.selectMode = false;
+            appState.reorderMode = false;
+            
             const productsScreen = document.getElementById('productsScreen');
+            productsScreen.classList.remove('select-mode', 'reorder-mode');
             
             if (appState.deleteMode) {
                 productsScreen.classList.add('delete-mode');
             } else {
                 productsScreen.classList.remove('delete-mode');
             }
+        }
+        
+        // Select Mode
+        function toggleSelectMode() {
+            appState.selectMode = !appState.selectMode;
+            appState.deleteMode = false;
+            appState.reorderMode = false;
+            appState.selectedProducts.clear();
+            
+            const productsScreen = document.getElementById('productsScreen');
+            productsScreen.classList.remove('delete-mode', 'reorder-mode');
+            
+            if (appState.selectMode) {
+                productsScreen.classList.add('select-mode');
+                document.getElementById('selectionBar').classList.add('visible');
+            } else {
+                productsScreen.classList.remove('select-mode');
+                document.getElementById('selectionBar').classList.remove('visible');
+            }
+            
+            updateSelectionCount();
+        }
+        
+        function toggleProductSelection(index, checkbox) {
+            if (appState.selectedProducts.has(index)) {
+                appState.selectedProducts.delete(index);
+                checkbox.classList.remove('checked');
+            } else {
+                appState.selectedProducts.add(index);
+                checkbox.classList.add('checked');
+            }
+            updateSelectionCount();
+        }
+        
+        function updateSelectionCount() {
+            const count = appState.selectedProducts.size;
+            document.getElementById('selectionCount').textContent = `${count} selected`;
+        }
+        
+        function cancelSelection() {
+            toggleSelectMode();
+        }
+        
+        function deleteSelected() {
+            if (appState.selectedProducts.size === 0) {
+                alert('No products selected');
+                return;
+            }
+            
+            const count = appState.selectedProducts.size;
+            if (confirm(`Delete ${count} product${count > 1 ? 's' : ''}?`)) {
+                const products = appState.data[appState.currentCategory][appState.currentBrand];
+                const indices = Array.from(appState.selectedProducts).sort((a, b) => b - a);
+                
+                indices.forEach(index => {
+                    products.splice(index, 1);
+                });
+                
+                saveData();
+                toggleSelectMode();
+                showProducts(appState.currentCategory, appState.currentBrand);
+            }
+        }
+        
+        // Reorder Mode
+        function toggleReorderMode() {
+            appState.reorderMode = !appState.reorderMode;
+            appState.deleteMode = false;
+            appState.selectMode = false;
+            
+            const productsScreen = document.getElementById('productsScreen');
+            productsScreen.classList.remove('delete-mode', 'select-mode');
+            
+            if (appState.reorderMode) {
+                productsScreen.classList.add('reorder-mode');
+            } else {
+                productsScreen.classList.remove('reorder-mode');
+            }
+        }
+        
+        function handleDragStart(e, index) {
+            if (!appState.reorderMode) return;
+            
+            appState.draggedIndex = index;
+            e.target.closest('.product-card').classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleDragOver(e) {
+            if (!appState.reorderMode) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        
+        function handleDragEnter(e, index) {
+            if (!appState.reorderMode || appState.draggedIndex === null) return;
+            e.target.closest('.product-card').classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            if (!appState.reorderMode) return;
+            e.target.closest('.product-card').classList.remove('drag-over');
+        }
+        
+        function handleDrop(e, dropIndex) {
+            if (!appState.reorderMode || appState.draggedIndex === null) return;
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const products = appState.data[appState.currentCategory][appState.currentBrand];
+            
+            if (appState.draggedIndex !== dropIndex) {
+                const draggedProduct = products[appState.draggedIndex];
+                products.splice(appState.draggedIndex, 1);
+                
+                if (dropIndex > appState.draggedIndex) {
+                    products.splice(dropIndex - 1, 0, draggedProduct);
+                } else {
+                    products.splice(dropIndex, 0, draggedProduct);
+                }
+                
+                saveData();
+                showProducts(appState.currentCategory, appState.currentBrand);
+            }
+            
+            return false;
+        }
+        
+        function handleDragEnd(e) {
+            if (!appState.reorderMode) return;
+            
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.classList.remove('dragging', 'drag-over');
+            });
+            
+            appState.draggedIndex = null;
         }
         
         function confirmDelete(productIndex, productName) {
@@ -1113,7 +1476,6 @@
                 brandsList.appendChild(brandCard);
             });
             
-            // Add Brand Card
             const addCard = document.createElement('div');
             addCard.className = 'add-card';
             addCard.onclick = showAddBrandModal;
@@ -1157,27 +1519,60 @@
             
             const products = appState.data[category][brand] || [];
             
-            // Show/hide delete toggle
-            const deleteToggle = document.getElementById('deleteToggle');
-            if (products.length > 0) {
-                deleteToggle.classList.add('visible');
-            } else {
-                deleteToggle.classList.remove('visible');
-            }
+            // Show/hide FABs
+            const fabs = ['deleteToggle', 'selectToggle', 'reorderToggle', 'whatsappBtn'];
+            fabs.forEach(id => {
+                const btn = document.getElementById(id);
+                if (products.length > 0) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
+            });
             
             products.forEach((product, index) => {
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
+                productCard.draggable = appState.reorderMode;
+                
                 productCard.onclick = (e) => {
-                    if (!e.target.classList.contains('product-price') && 
-                        !e.target.classList.contains('delete-btn')) {
+                    if (e.target.classList.contains('delete-btn') || 
+                        e.target.classList.contains('select-checkbox') ||
+                        e.target.classList.contains('drag-handle') ||
+                        e.target.classList.contains('product-price')) {
+                        return;
+                    }
+                    
+                    if (appState.selectMode) {
+                        const checkbox = productCard.querySelector('.select-checkbox');
+                        toggleProductSelection(index, checkbox);
+                    } else if (!appState.deleteMode && !appState.reorderMode) {
                         openImageModal(product, index);
                     }
                 };
                 
+                // Drag events
+                productCard.ondragstart = (e) => handleDragStart(e, index);
+                productCard.ondragover = handleDragOver;
+                productCard.ondragenter = (e) => handleDragEnter(e, index);
+                productCard.ondragleave = handleDragLeave;
+                productCard.ondrop = (e) => handleDrop(e, index);
+                productCard.ondragend = handleDragEnd;
+                
                 const imageHtml = product.image 
                     ? `<img src="${product.image}" alt="${product.name}" class="product-image">`
                     : `<div class="product-placeholder">📦</div>`;
+                
+                const dragHandle = document.createElement('div');
+                dragHandle.className = 'drag-handle';
+                dragHandle.innerHTML = '☰';
+                
+                const selectCheckbox = document.createElement('div');
+                selectCheckbox.className = 'select-checkbox';
+                selectCheckbox.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleProductSelection(index, selectCheckbox);
+                };
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
@@ -1192,7 +1587,9 @@
                 priceDiv.textContent = product.price || 'Price not set';
                 priceDiv.onclick = (e) => {
                     e.stopPropagation();
-                    editPriceOnCard(priceDiv, index);
+                    if (!appState.deleteMode && !appState.selectMode && !appState.reorderMode) {
+                        editPriceOnCard(priceDiv, index);
+                    }
                 };
                 
                 productCard.innerHTML = `
@@ -1202,6 +1599,8 @@
                     <div class="product-name">${product.name}</div>
                 `;
                 productCard.appendChild(priceDiv);
+                productCard.appendChild(dragHandle);
+                productCard.appendChild(selectCheckbox);
                 productCard.appendChild(deleteBtn);
                 productsList.appendChild(productCard);
             });
@@ -1444,13 +1843,11 @@
             }
         }
         
-        // Modal
         function closeModal(event, modalId) {
             if (event) event.stopPropagation();
             document.getElementById(modalId).classList.remove('active');
         }
         
-        // Data Persistence
         function saveData() {
             try {
                 localStorage.setItem('catalogData', JSON.stringify(appState.data));
@@ -1470,10 +1867,8 @@
             }
         }
         
-        // Initialize
         loadData();
         
-        // Service Worker for PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
                 self.addEventListener('install', (e) => {
