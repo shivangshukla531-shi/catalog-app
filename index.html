@@ -47,6 +47,28 @@
             padding-bottom: 40px;
         }
         
+        .save-indicator {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: #34C759;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 200;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+        
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
         .header {
             background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
@@ -936,6 +958,9 @@
     </style>
 </head>
 <body>
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="saveIndicator">✓ Saved</div>
+    
     <div class="app" id="app">
         <!-- Header -->
         <div class="header">
@@ -1119,6 +1144,71 @@
             }
         };
         
+        // Save Indicator
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Enhanced Data Persistence
+        function saveData() {
+            try {
+                const dataStr = JSON.stringify(appState.data);
+                localStorage.setItem('catalogData', dataStr);
+                
+                // Double-check it saved
+                const saved = localStorage.getItem('catalogData');
+                if (saved === dataStr) {
+                    console.log('✓ Data saved successfully');
+                    showSaveIndicator();
+                    return true;
+                } else {
+                    console.error('✗ Save verification failed');
+                    alert('Warning: Data may not have saved properly!');
+                    return false;
+                }
+            } catch (e) {
+                console.error('Error saving data:', e);
+                alert('Error saving data: ' + e.message);
+                return false;
+            }
+        }
+        
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('catalogData');
+                if (saved) {
+                    appState.data = JSON.parse(saved);
+                    console.log('✓ Data loaded successfully');
+                } else {
+                    console.log('No saved data found, using defaults');
+                }
+            } catch (e) {
+                console.error('Error loading data:', e);
+                alert('Error loading data. Starting fresh.');
+            }
+        }
+        
+        // Auto-save every 5 seconds (backup)
+        setInterval(() => {
+            saveData();
+        }, 5000);
+        
+        // Save before page unload
+        window.addEventListener('beforeunload', (e) => {
+            saveData();
+        });
+        
+        // Save when app goes to background (mobile)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                saveData();
+            }
+        });
+        
         // Navigation
         const screens = {
             home: document.getElementById('homeScreen'),
@@ -1131,7 +1221,6 @@
             screens[screenName].classList.remove('hidden');
             appState.currentScreen = screenName;
             
-            // Reset modes
             appState.deleteMode = false;
             appState.selectMode = false;
             appState.reorderMode = false;
@@ -1178,7 +1267,7 @@
             panel.classList.remove('active');
         }
         
-        // Export/Import Functions
+        // Export/Import
         function exportData() {
             const data = localStorage.getItem('catalogData');
             if (!data || data === '{"COOLER":{},"FAN":{}}') {
@@ -1519,7 +1608,6 @@
             
             const products = appState.data[category][brand] || [];
             
-            // Show/hide FABs
             const fabs = ['deleteToggle', 'selectToggle', 'reorderToggle', 'whatsappBtn'];
             fabs.forEach(id => {
                 const btn = document.getElementById(id);
@@ -1551,7 +1639,6 @@
                     }
                 };
                 
-                // Drag events
                 productCard.ondragstart = (e) => handleDragStart(e, index);
                 productCard.ondragover = handleDragOver;
                 productCard.ondragenter = (e) => handleDragEnter(e, index);
@@ -1848,26 +1935,25 @@
             document.getElementById(modalId).classList.remove('active');
         }
         
-        function saveData() {
-            try {
-                localStorage.setItem('catalogData', JSON.stringify(appState.data));
-            } catch (e) {
-                console.error('Error saving data:', e);
-            }
-        }
-        
-        function loadData() {
-            try {
-                const saved = localStorage.getItem('catalogData');
-                if (saved) {
-                    appState.data = JSON.parse(saved);
-                }
-            } catch (e) {
-                console.error('Error loading data:', e);
-            }
-        }
-        
+        // Initialize
         loadData();
+        
+        // Test localStorage on startup
+        console.log('Testing localStorage...');
+        try {
+            localStorage.setItem('test', 'test');
+            const test = localStorage.getItem('test');
+            if (test === 'test') {
+                console.log('✓ localStorage is working');
+                localStorage.removeItem('test');
+            } else {
+                console.error('✗ localStorage test failed');
+                alert('Warning: Data storage may not work properly!');
+            }
+        } catch (e) {
+            console.error('✗ localStorage error:', e);
+            alert('Error: Your browser may be in Private mode. Data will not save!');
+        }
         
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
